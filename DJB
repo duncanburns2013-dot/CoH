@@ -1,0 +1,216 @@
+#!/usr/bin/env python3
+"""
+Haverhill, MA Property Tax and Cost of Living Analysis (2017-2025)
+===================================================================
+Analysis of year-over-year property tax increases and cost of living changes
+in Haverhill, Massachusetts from 2017 to 2025.
+
+# Property tax increases for average single-family home (in dollars)
+property_tax_increases = {
+    2017: 138,
+    2018: 80,
+    2019: 189,
+    2020: 118,
+    2021: 93,
+    2022: 163,
+    2023: 201,
+    2024: 180,
+    2025: 263
+}
+
+# Current data (FY 2025)
+current_avg_home_value = 561_903  # dollars
+current_tax_rate = 10.71  # per $1,000 of assessed value
+current_tax_bill = (current_avg_home_value / 1000) * current_tax_rate
+
+# Cost of living data
+annual_col_increase_rate = 0.02  # 2% average annual increase
+col_2025_single = 36_456  # annual cost for single person
+col_2025_family = 80_280  # annual cost for family of four
+
+# Tax assumptions
+effective_tax_rate = 0.25  # 25% effective tax rate for income calculations
+
+
+def calculate_cumulative_increase():
+    """Calculate total cumulative property tax increase from 2017-2025."""
+    total = sum(property_tax_increases.values())
+    return total
+
+
+def calculate_baseline_tax_2017():
+    """Estimate the baseline property tax bill in 2017."""
+    cumulative = calculate_cumulative_increase()
+    baseline = current_tax_bill - cumulative
+    return baseline
+
+
+def calculate_percentage_increase():
+    """Calculate the percentage increase in property taxes from 2017-2025."""
+    baseline = calculate_baseline_tax_2017()
+    cumulative = calculate_cumulative_increase()
+    percentage = (cumulative / baseline) * 100
+    avg_annual = percentage / 8  # 8 years from 2017 to 2025
+    return percentage, avg_annual
+
+
+def calculate_col_increase(years):
+    """Calculate cumulative cost of living increase over specified years."""
+    cumulative_multiplier = (1 + annual_col_increase_rate) ** years
+    percentage = (cumulative_multiplier - 1) * 100
+    return percentage
+
+
+def calculate_income_needed_2years():
+    """Calculate additional income needed to keep up with costs (2024-2025)."""
+    # Property tax increases
+    tax_increase_2024 = property_tax_increases[2024]
+    tax_increase_2025 = property_tax_increases[2025]
+    total_tax_increase = tax_increase_2024 + tax_increase_2025
+    
+    # Cost of living increases (2 years at 2% annually)
+    col_increase_single = col_2025_single * (1 - (1 / (1 + annual_col_increase_rate) ** 2))
+    col_increase_family = col_2025_family * (1 - (1 / (1 + annual_col_increase_rate) ** 2))
+    
+    # Total after-tax expenses increase
+    total_single = col_increase_single + total_tax_increase
+    total_family = col_increase_family + total_tax_increase
+    
+    # Pre-tax income needed (dividing by 1 - tax_rate to gross up)
+    pretax_single = total_single / (1 - effective_tax_rate)
+    pretax_family = total_family / (1 - effective_tax_rate)
+    
+    # Annual equivalent (divide by 2 for per-year average)
+    annual_single = pretax_single / 2
+    annual_family = pretax_family / 2
+    
+    return {
+        'tax_increase': total_tax_increase,
+        'col_increase_single': col_increase_single,
+        'col_increase_family': col_increase_family,
+        'total_single': total_single,
+        'total_family': total_family,
+        'pretax_single': pretax_single,
+        'pretax_family': pretax_family,
+        'annual_single': annual_single,
+        'annual_family': annual_family
+    }
+
+
+def print_analysis():
+    """Print comprehensive analysis of Haverhill tax and cost of living data."""
+    print("=" * 70)
+    print("HAVERHILL, MA - PROPERTY TAX & COST OF LIVING ANALYSIS (2017-2025)")
+    print("=" * 70)
+    print()
+    
+    # Annual increases
+    print("PROPERTY TAX INCREASES (Average Single-Family Home)")
+    print("-" * 70)
+    for year, increase in property_tax_increases.items():
+        print(f"  {year}: ${increase:,}")
+    print()
+    
+    cumulative = calculate_cumulative_increase()
+    print(f"Total Cumulative Increase (2017-2025): ${cumulative:,}")
+    print()
+    
+    # Highest increase
+    max_year = max(property_tax_increases, key=property_tax_increases.get)
+    max_increase = property_tax_increases[max_year]
+    print(f"Highest Single-Year Increase: ${max_increase:,} in {max_year}")
+    print()
+    
+    # Current data
+    print("CURRENT DATA (FY 2025)")
+    print("-" * 70)
+    print(f"  Average Home Value: ${current_avg_home_value:,}")
+    print(f"  Residential Tax Rate: ${current_tax_rate:.2f} per $1,000 assessed value")
+    print(f"  Estimated Current Tax Bill: ${current_tax_bill:,.2f}")
+    print()
+    
+    # Historical comparison
+    baseline_2017 = calculate_baseline_tax_2017()
+    print("HISTORICAL COMPARISON")
+    print("-" * 70)
+    print(f"  Estimated 2017 Tax Bill: ${baseline_2017:,.2f}")
+    print(f"  Estimated 2025 Tax Bill: ${current_tax_bill:,.2f}")
+    print(f"  Total Increase: ${cumulative:,}")
+    print()
+    
+    # Percentage increases
+    pct_increase, avg_annual = calculate_percentage_increase()
+    col_increase_8yr = calculate_col_increase(8)
+    
+    print("PROPERTY TAX vs. COST OF LIVING (2017-2025)")
+    print("-" * 70)
+    print(f"  Property Tax Increase: {pct_increase:.1f}%")
+    print(f"  Average Annual Increase: {avg_annual:.1f}%")
+    print(f"  Cost of Living Increase: {col_increase_8yr:.1f}% (at 2% annually)")
+    print(f"  Property taxes increased {pct_increase / col_increase_8yr:.1f}x faster than COL")
+    print(f"  Difference: {pct_increase - col_increase_8yr:.1f} percentage points")
+    print()
+    
+    # Recent comparison (2024-2025)
+    recent_tax = property_tax_increases[2024] + property_tax_increases[2025]
+    col_increase_2yr = calculate_col_increase(2)
+    recent_pct = (recent_tax / baseline_2017) * 100
+    
+    print("RECENT TRENDS (2024-2025)")
+    print("-" * 70)
+    print(f"  Property Tax Increase: ${recent_tax:,} over 2 years")
+    print(f"  Average Annual Tax Increase: ~{recent_pct / 2:.1f}%")
+    print(f"  Cost of Living Increase: ~{col_increase_2yr:.1f}% over 2 years")
+    print(f"  Property taxes increasing ~{(recent_pct / 2) / annual_col_increase_rate / 100:.1f}x faster")
+    print()
+    
+    # Income needed
+    income_data = calculate_income_needed_2years()
+    
+    print("ADDITIONAL INCOME NEEDED TO KEEP UP (2024-2025)")
+    print("-" * 70)
+    print(f"  Property Tax Increase: ${income_data['tax_increase']:,.0f}")
+    print()
+    print("  Single Person:")
+    print(f"    Cost of Living Increase: ${income_data['col_increase_single']:,.0f}")
+    print(f"    Total After-Tax Increase: ${income_data['total_single']:,.0f}")
+    print(f"    Pre-Tax Income Needed: ${income_data['pretax_single']:,.0f} (over 2 years)")
+    print(f"    Average Annual Raise Needed: ${income_data['annual_single']:,.0f}/year")
+    print()
+    print("  Family of Four:")
+    print(f"    Cost of Living Increase: ${income_data['col_increase_family']:,.0f}")
+    print(f"    Total After-Tax Increase: ${income_data['total_family']:,.0f}")
+    print(f"    Pre-Tax Income Needed: ${income_data['pretax_family']:,.0f} (over 2 years)")
+    print(f"    Average Annual Raise Needed: ${income_data['annual_family']:,.0f}/year")
+    print()
+    
+    print("=" * 70)
+    print("NOTE: Cost of living calculations assume consistent 2% annual increase.")
+    print("Effective tax rate of 25% used for pre-tax income calculations.")
+    print("=" * 70)
+
+
+def export_data_csv():
+    """Export the raw data to CSV format."""
+    import csv
+    
+    with open('/mnt/user-data/outputs/haverhill_tax_data.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['Year', 'Property Tax Increase ($)', 'Cumulative Increase ($)'])
+        
+        cumulative = 0
+        for year, increase in property_tax_increases.items():
+            cumulative += increase
+            writer.writerow([year, increase, cumulative])
+    
+    print("Data exported to haverhill_tax_data.csv")
+
+
+if __name__ == "__main__":
+    print_analysis()
+    print()
+    
+    # Optionally export to CSV
+    response = input("Export data to CSV? (y/n): ")
+    if response.lower() == 'y':
+        export_data_csv()
